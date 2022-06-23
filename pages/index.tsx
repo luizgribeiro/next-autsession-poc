@@ -56,6 +56,27 @@ const sessionFromToken = (req: IncomingMessage) => {
   return sessionData;
 };
 
+const parseAuthCookie = (cookies: string) => {};
+
+const BlockUnAuth = (fn: (context: NextPageContext) => Promise<any>) => {
+  return async function (context: NextPageContext) {
+    const { req, res }: { req?: IncomingMessage; res?: ServerResponse } =
+      context;
+
+    const bearer = req?.headers.cookie
+      ?.split("=")
+      .find((cookie) => cookie.match(/^Bearer/))
+      ?.split(":")[1];
+
+    if (!bearer) {
+      res?.writeHead(307, { Location: "/login" });
+      res?.end();
+    }
+    const pageProps = await fn(context);
+    return { pageProps, bearer };
+  };
+};
+
 const injectSession = (fn: (context: NextPageContext) => any) => {
   return async function (context: NextPageContext) {
     //parse session from request
@@ -73,9 +94,11 @@ const injectSession = (fn: (context: NextPageContext) => any) => {
   };
 };
 
-export const getServerSideProps = injectSession((context: any) => {
-  const sessionInfo = "prop-passada-via-ssr";
-  const session = context?.req?.cookies.Authorization; //.get("parsedSession");
-  console.log(session);
-  return { props: { sessionInfo } };
-});
+export const getServerSideProps = injectSession(
+  BlockUnAuth(async (context: NextPageContext) => {
+    const sessionInfo = "prop-passada-via-ssr";
+    //const session = context?.req?.cookies.Authorization; //.get("parsedSession");
+    console.log(sessionInfo);
+    return { props: { sessionInfo } };
+  })
+);
