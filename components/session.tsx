@@ -23,9 +23,9 @@ const sessionValue = {
   permissionAccounts: [],
 };
 
-export const Session: React.FC<{ children: any }> = (props) => {
+export const Session: React.FC<{ children: any; session: any }> = (props) => {
   return (
-    <SessionContext.Provider value={sessionValue}>
+    <SessionContext.Provider value={props.session}>
       {props.children}
     </SessionContext.Provider>
   );
