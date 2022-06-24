@@ -69,7 +69,7 @@ const BlockUnAuth = (fn: (context: NextPageContext) => Promise<any>) => {
       ?.split(":")[1];
 
     if (!bearer) {
-      res?.writeHead(307, { Location: "/login" });
+      res?.writeHead(307, { Location: "/login?from=" });
       res?.end();
     }
     const pageProps = await fn(context);
